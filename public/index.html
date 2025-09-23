@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZRS Test Maps</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; }
+h1 { color: #2c3e50; }
+form { margin-bottom: 20px; }
+input[type="file"] { margin-bottom: 10px; }
+ul { list-style: none; padding: 0; }
+li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+<h1>ZRS Test Maps</h1>
+
+<h2>Upload a Map (.zip)</h2>
+<form id="uploadForm">
+  <input type="file" name="map" accept=".zip" required>
+  <button type="submit">Upload</button>
+</form>
+
+<h2>Available Maps</h2>
+<ul id="mapsList"></ul>
+
+<script>
+const form = document.getElementById('uploadForm');
+const mapsList = document.getElementById('mapsList');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fileInput = form.querySelector('input[type="file"]');
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('map', file);
+
+  const res = await fetch('/upload', { method: 'POST', body: formData });
+  const data = await res.json();
+  if (data.success) {
+    fileInput.value = '';
+    loadMaps();
+  } else {
+    alert('Upload failed');
+  }
+});
+
+async function loadMaps() {
+  const res = await fetch('/api/maps');
+  const maps = await res.json();
+  mapsList.innerHTML = '';
+  maps.forEach(m => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${m.url}" target="_blank">${m.name}</a>`;
+    mapsList.appendChild(li);
+  });
+}
+
+// Load maps on page load
+loadMaps();
+</script>
+</body>
+</html>

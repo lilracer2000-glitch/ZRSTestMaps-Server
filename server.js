@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 // Enable CORS (so Beat Saber mods can call this)
 app.use(cors());
 
+// Serve static files from public folder
+app.use(express.static('public'));
+
 // Make sure uploads dir exists
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
@@ -27,8 +30,15 @@ const upload = multer({ storage });
 // Serve uploaded zips statically
 app.use('/uploads', express.static(UPLOAD_DIR));
 
-// In-memory list of maps
-let maps = [];
+// In-memory list of maps (populate with existing uploads on startup)
+let maps = fs.readdirSync(UPLOAD_DIR)
+  .filter(f => f.endsWith('.zip'))
+  .map(f => ({
+    id: Date.now().toString() + '-' + f,
+    name: f,
+    filename: f,
+    url: `/uploads/${f}` // relative path works with express.static
+  }));
 
 // Upload endpoint
 app.post('/upload', upload.single('map'), (req, res) => {
@@ -36,22 +46,23 @@ app.post('/upload', upload.single('map'), (req, res) => {
     id: Date.now().toString(),
     name: req.file.originalname,
     filename: req.file.filename,
-    url: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+    url: `/uploads/${req.file.filename}`
   };
   maps.push(map);
   res.json({ success: true, map });
 });
 
-// API: list maps
+// API: list maps as JSON
 app.get('/api/maps', (req, res) => {
   res.json(maps);
 });
 
-// Root page (optional)
+// Root page: serve browser interface
 app.get('/', (req, res) => {
-  res.send('<h1>ZRS Test Maps</h1><p>Upload via /upload (form-data)</p>');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
