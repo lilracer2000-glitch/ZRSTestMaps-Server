@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZRS Admin</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; }
+  h1 { color: #2c3e50; }
+  ul { list-style: none; padding: 0; }
+  li { margin-bottom: 5px; }
+  button { margin-left: 10px; }
+</style>
+</head>
+<body>
+<h1>ZRS Admin - Delete Maps</h1>
+
+<ul id="mapsList"></ul>
+
+<script>
+const mapsList = document.getElementById('mapsList');
+
+async function loadMaps() {
+  const res = await fetch('/admin/api/maps');
+  const maps = await res.json();
+  mapsList.innerHTML = '';
+  maps.forEach(m => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${m.url}" target="_blank">${m.name}</a>
+                    <button onclick="deleteMap('${m.name}')">Delete</button>`;
+    mapsList.appendChild(li);
+  });
+}
+
+async function deleteMap(name) {
+  if (!confirm(`Delete map "${name}"?`)) return;
+  const res = await fetch(`/admin/api/delete/${encodeURIComponent(name)}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) loadMaps();
+  else alert('Delete failed');
+}
+
+// Load maps on page load
+loadMaps();
+</script>
+</body>
+</html>
