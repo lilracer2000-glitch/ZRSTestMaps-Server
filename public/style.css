@@ -1,0 +1,250 @@
+/* ------------------------------
+   🌐 Global Styles
+------------------------------ */
+body {
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f8fa;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+body.fade-theme {
+  transition: none;
+}
+
+
+h1, h2, h3 {
+  color: #4b0082;
+  text-align: center;
+}
+
+section {
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  width: 90%;
+  max-width: 800px;
+  transition: background 0.3s ease;
+}
+
+/* ------------------------------
+   🧭 Top Header Bar
+------------------------------ */
+.top-header {
+  background-color: #4b0082;
+  color: white;
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  max-width: 1000px;
+  width: 90%;
+}
+
+.header-content h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  margin-left: 10px;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.header-nav {
+  margin-left: auto;
+}
+
+.theme-toggle {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ------------------------------
+   📜 Playlist Links
+------------------------------ */
+.playlist-link {
+  background-color: #4b0082;
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: inline-block;
+  transition: background 0.2s ease;
+}
+
+.playlist-link:hover {
+  background-color: #6a0dad;
+}
+
+/* ------------------------------
+   📂 Map & Pack Lists
+------------------------------ */
+.map-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.map-list li {
+  background: #f0f0f7;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  transition: background 0.3s ease;
+}
+
+.map-list li strong {
+  color: #4b0082;
+}
+
+.map-list a {
+  color: #4b0082;
+  margin-left: 8px;
+  text-decoration: none;
+}
+
+.map-list a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------
+   📤 Upload Form
+------------------------------ */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-form input[type="file"],
+.upload-form input[type="password"],
+.upload-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.upload-form button {
+  background-color: #4b0082;
+  color: white;
+  padding: 10px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.upload-form button:hover {
+  background-color: #6a0dad;
+}
+
+/* ------------------------------
+   🗑️ Delete Button
+------------------------------ */
+.delete-btn {
+  background-color: #d9534f;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 10px;
+  transition: background 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #c9302c;
+}
+
+/* ------------------------------
+   🌙 Dark Mode
+------------------------------ */
+body.dark {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark section {
+  background: #1e1e1e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+body.dark h1, 
+body.dark h2, 
+body.dark h3 {
+  color: #bb86fc;
+}
+
+body.dark .map-list li {
+  background: #2a2a2a;
+}
+
+body.dark .map-list a {
+  color: #bb86fc;
+}
+
+body.dark .playlist-link {
+  background-color: #bb86fc;
+  color: #121212;
+}
+
+body.dark .playlist-link:hover {
+  background-color: #d0a9ff;
+}
+
+/* ------------------------------
+   📱 Responsive
+------------------------------ */
+@media (max-width: 600px) {
+  section {
+    padding: 15px;
+  }
+
+  .map-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .map-list a, .delete-btn {
+    margin-top: 5px;
+  }
+}
