@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZRS Test Maps - One Click Install Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #2b6cb0;
+      margin-bottom: 1rem;
+    }
+    #one-click-install {
+      background: #2b6cb0;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #one-click-install:hover {
+      background: #1f4f85;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧪 ZRS One Click Install Test</h1>
+  <button id="one-click-install">🟦 One Click Install</button>
+  <div id="status">Click the button to test PC & Quest behavior.</div>
+
+  <script>
+    // 🔑 Replace this with a real test map key or ID from your site
+    const mapKey = "44ec4";
+    const protocolUrl = `beatsaver://${mapKey}`;
+    // 📝 Replace this URL with your own hosted map if you want
+    const directZipUrl = `https://beatsaver.com/api/download/key/${mapKey}`;
+
+    const statusEl = document.getElementById('status');
+
+    function isQuestBrowser() {
+      const ua = navigator.userAgent || "";
+      return ua.includes("OculusBrowser") || ua.includes("Quest");
+    }
+
+    document.getElementById("one-click-install").addEventListener("click", () => {
+      const start = Date.now();
+
+      if (isQuestBrowser()) {
+        statusEl.textContent = "Detected Quest browser 🧠 → Redirecting to .zip for BMBF…";
+        window.location.href = directZipUrl;
+      } else {
+        statusEl.textContent = "Detected PC browser 🧠 → Trying beatsaver:// protocol…";
+        window.location.href = protocolUrl;
+
+        setTimeout(() => {
+          if (Date.now() - start < 1500) {
+            statusEl.textContent = "Protocol not caught 😕 → Falling back to .zip download…";
+            window.location.href = directZipUrl;
+          } else {
+            statusEl.textContent = "✅ ModAssistant or other handler caught the protocol.";
+          }
+        }, 1000);
+      }
+    });
+  </script>
+
+</body>
+</html>
