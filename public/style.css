@@ -1,250 +1,227 @@
-/* ------------------------------
-   🌐 Global Styles
------------------------------- */
-body {
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f8fa;
-  color: #333;
+/* 🌐 Global Reset & Font */
+* {
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  box-sizing: border-box;
 }
 
-body.fade-theme {
-  transition: none;
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f7f7f7;
+  color: #222;
+  transition: background-color 0.3s, color 0.3s;
+  padding-bottom: 4rem;
 }
 
-
-h1, h2, h3 {
-  color: #4b0082;
-  text-align: center;
+.dark {
+  background-color: #121212;
+  color: #e0e0e0;
 }
 
-section {
-  background: white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px 0;
-  width: 90%;
-  max-width: 800px;
-  transition: background 0.3s ease;
-}
-
-/* ------------------------------
-   🧭 Top Header Bar
------------------------------- */
+/* 🧭 Header */
 .top-header {
-  background-color: #4b0082;
-  color: white;
-  width: 100%;
-  padding: 10px 0;
-  display: flex;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  background: linear-gradient(90deg, #7f00ff, #e100ff);
+  padding: 1rem;
+  color: #fff;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  max-width: 1000px;
-  width: 90%;
-}
-
-.header-content h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0;
-  margin-left: 10px;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  border-radius: 8px;
+  height: 50px;
+  margin-right: 1rem;
 }
 
-.header-nav {
-  margin-left: auto;
+.header-content h1 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  flex: 1;
 }
 
 .theme-toggle {
-  background: transparent;
-  color: white;
-  border: 2px solid white;
-  padding: 5px 10px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s ease;
+  color: #fff;
+  font-weight: 600;
+  transition: background 0.3s;
 }
-
 .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* ------------------------------
-   📜 Playlist Links
------------------------------- */
-.playlist-link {
-  background-color: #4b0082;
-  color: white;
-  text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: bold;
-  display: inline-block;
-  transition: background 0.2s ease;
+/* 🌟 Admin Banner */
+.admin-banner {
+  background-color: #ffd54f;
+  color: #333;
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: 600;
 }
 
-.playlist-link:hover {
-  background-color: #6a0dad;
+/* 📤 Upload Section */
+.upload {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #ffffffb0;
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.dark .upload {
+  background: #1e1e1ebb;
 }
 
-/* ------------------------------
-   📂 Map & Pack Lists
------------------------------- */
-.map-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.map-list li {
-  background: #f0f0f7;
-  border-radius: 8px;
-  padding: 10px 15px;
-  margin: 8px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  transition: background 0.3s ease;
-}
-
-.map-list li strong {
-  color: #4b0082;
-}
-
-.map-list a {
-  color: #4b0082;
-  margin-left: 8px;
-  text-decoration: none;
-}
-
-.map-list a:hover {
-  text-decoration: underline;
-}
-
-/* ------------------------------
-   📤 Upload Form
------------------------------- */
 .upload-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.5rem;
 }
 
-.upload-form input[type="file"],
-.upload-form input[type="password"],
-.upload-form select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
+.upload-form input,
+.upload-form select,
+.upload-form button {
+  padding: 0.6rem;
+  font-size: 1rem;
 }
 
 .upload-form button {
-  background-color: #4b0082;
+  background-color: #7f00ff;
   color: white;
-  padding: 10px;
-  font-size: 15px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  font-weight: 600;
 }
-
 .upload-form button:hover {
-  background-color: #6a0dad;
+  background-color: #6000c2;
 }
 
-/* ------------------------------
-   🗑️ Delete Button
------------------------------- */
-.delete-btn {
-  background-color: #d9534f;
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  margin-left: 10px;
-  transition: background 0.2s ease;
+/* 👷 Mapper Section */
+.mapper-section {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
-.delete-btn:hover {
-  background-color: #c9302c;
+.mapper-section h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
 }
 
-/* ------------------------------
-   🌙 Dark Mode
------------------------------- */
-body.dark {
-  background-color: #121212;
-  color: #e0e0e0;
+/* 🧍 Mapper Block with Sticky Header + Fade */
+.mapper-block {
+  margin-bottom: 2rem;
+  padding-top: 0.5rem;
+  border-top: 2px solid #ddd;
+}
+.dark .mapper-block {
+  border-top: 2px solid #333;
 }
 
-body.dark section {
+.mapper-block h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: #7f00ff;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0.4rem 0.5rem;
+  background: rgba(247, 247, 247, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
+}
+.dark .mapper-block h3 {
+  color: #b366ff;
+  background: rgba(18, 18, 18, 0.85);
+}
+
+.mapper-block h3::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.15), transparent);
+  margin-top: 4px;
+}
+
+/* 📄 Map List (Stacked Rows) */
+.map-list {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.map-list li {
+  background: #f0f0f0;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+.map-list li:hover {
+  background: #e4e4e4;
+}
+
+.dark .map-list li {
   background: #1e1e1e;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
-
-body.dark h1, 
-body.dark h2, 
-body.dark h3 {
-  color: #bb86fc;
-}
-
-body.dark .map-list li {
+.dark .map-list li:hover {
   background: #2a2a2a;
 }
 
-body.dark .map-list a {
-  color: #bb86fc;
+.map-list strong {
+  font-weight: 600;
+  color: #222;
+}
+.dark .map-list strong {
+  color: #fff;
 }
 
-body.dark .playlist-link {
-  background-color: #bb86fc;
-  color: #121212;
+.map-list a {
+  color: #7f00ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.map-list a:hover {
+  text-decoration: underline;
+}
+.dark .map-list a {
+  color: #b366ff;
 }
 
-body.dark .playlist-link:hover {
-  background-color: #d0a9ff;
+/* 🗑️ Delete Button (inline) */
+.delete-btn {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.delete-btn:hover {
+  background-color: #b71c1c;
 }
 
-/* ------------------------------
-   📱 Responsive
------------------------------- */
-@media (max-width: 600px) {
-  section {
-    padding: 15px;
-  }
-
-  .map-list li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .map-list a, .delete-btn {
-    margin-top: 5px;
-  }
+/* 🌙 Smooth Theme Transition */
+.fade-theme {
+  transition: background-color 0.3s, color 0.3s;
 }
