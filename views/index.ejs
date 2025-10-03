@@ -72,12 +72,10 @@
                 <!-- 💾 Download ZIP -->
                 <a href="<%= file.url %>" class="btn">💾 Download ZIP</a>
 
-                <!-- 📲 BMBF Install (Quest) -->
-                <a href="bmbf://playlist?url=<%= baseUrl + file.playlistUrl %>" class="btn">📲 Install via BMBF</a>
+                <!-- 📲 MBF Install (Quest) -->
+                <a href="bmbf://playlist?url=<%= baseUrl + file.playlistUrl %>" class="btn">📲 Install via MBF</a>
 
-                <!-- 📝 Per-map BPLIST (PC) -->
-                <a href="<%= file.playlistUrl %>" class="btn">📝 Download BPLIST</a>
-
+                
                 <% if (isAdmin) { %>
                   <form action="/delete" method="POST" style="display:inline;">
                     <input type="hidden" name="mapper" value="<%= mapper %>">
