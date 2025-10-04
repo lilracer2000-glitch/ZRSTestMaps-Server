@@ -133,6 +133,74 @@ app.get('/bplist/:mapper/:map.bplist', (req, res) => {
   res.send(JSON.stringify(playlist, null, 2));
 });
 
+// ======= ZRS API v1: list mappers + maps (for Quest mod) =======
+
+const crypto = require('crypto'); // only used if you later want sha1
+
+// helper to parse "47595 (Zombie - Zokking).zip"
+function parseBeatSaverStyleName(zip) {
+  const name = zip.replace(/\.zip$/i, '');
+  // key = chunk before first space or the part before parentheses
+  const keyMatch = name.match(/^([^\s(]+)/);
+  const key = keyMatch ? keyMatch[1] : name;
+
+  // song & mapper inside "(Song - Mapper)"
+  let songName = name;
+  const paren = name.match(/\((.+?)\)/);
+  if (paren) {
+    const parts = paren[1].split(' - ');
+    songName = parts[0] || name;
+  }
+  return { key, songName };
+}
+
+// list maps for a mapper folder
+function listMapsForMapper(mapperName, baseUrl) {
+  const dir = path.join(MAPS_DIR, mapperName);
+  if (!fs.existsSync(dir)) return [];
+
+  return fs.readdirSync(dir)
+    .filter(f => f.toLowerCase().endsWith('.zip'))
+    .map(f => {
+      const full = path.join(dir, f);
+      const stat = fs.statSync(full);
+      const { key, songName } = parseBeatSaverStyleName(f);
+      return {
+        key,
+        songName,
+        filename: f,
+        size: stat.size,
+        url: `${baseUrl}/maps/${encodeURIComponent(mapperName)}/${encodeURIComponent(f)}`
+        // later we can add "sha1" if you want integrity checks
+      };
+    })
+    .sort((a,b) => a.songName.localeCompare(b.songName));
+}
+
+// GET /api/v1/maps  → { mappers: [ { name, maps: [...] }, ... ] }
+app.get('/api/v1/maps', (req, res) => {
+  const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const mappers = fs.readdirSync(MAPS_DIR, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)
+    .sort((a,b) => a.localeCompare(b))
+    .map(name => ({ name, maps: listMapsForMapper(name, baseUrl) }));
+
+  res.json({ mappers });
+});
+
+// GET /api/v1/maps/:mapper  → { name, maps: [...] }
+app.get('/api/v1/maps/:mapper', (req, res) => {
+  const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const { mapper } = req.params;
+  const dir = path.join(MAPS_DIR, mapper);
+  if (!fs.existsSync(dir)) return res.status(404).json({ error: 'Mapper not found' });
+
+  res.json({ name: mapper, maps: listMapsForMapper(mapper, baseUrl) });
+});
+
+// tiny health check if useful
+app.get('/health', (_req, res) => res.send('ok'));
 
 
 // ----------------------------
