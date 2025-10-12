@@ -7,6 +7,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const crypto = require('crypto'); // for future integrity checks
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -113,7 +114,7 @@ app.post('/delete', (req, res) => {
 });
 
 // ----------------------------
-// 📝 Per-Map BPLIST Generation (with download headers)
+// 📝 Per-Map BPLIST Generation
 // ----------------------------
 app.get('/bplist/:mapper/:map.bplist', (req, res) => {
   const { mapper, map } = req.params;
@@ -127,26 +128,20 @@ app.get('/bplist/:mapper/:map.bplist', (req, res) => {
     songs: [{ key: map, songName: map }]
   };
 
-  // 🔽 Force browser to download as "<map>.bplist"
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Disposition', `attachment; filename="${map}.bplist"`);
   res.send(JSON.stringify(playlist, null, 2));
 });
 
-// ======= ZRS API v1: list mappers + maps (for Quest mod) =======
-
-const crypto = require('crypto'); // only used if you later want sha1
-
-// helper to parse "47595 (Zombie - Zokking).zip"
+// ----------------------------
+// 🧩 API v1 — JSON map list
+// ----------------------------
 function parseBeatSaverStyleName(zip) {
   const name = zip.replace(/\.zip$/i, '');
-  // key = chunk before first space or the part before parentheses
   const keyMatch = name.match(/^([^\s(]+)/);
   const key = keyMatch ? keyMatch[1] : name;
-
-  // song & mapper inside "(Song - Mapper)"
-  let songName = name;
   const paren = name.match(/\((.+?)\)/);
+  let songName = name;
   if (paren) {
     const parts = paren[1].split(' - ');
     songName = parts[0] || name;
@@ -154,7 +149,6 @@ function parseBeatSaverStyleName(zip) {
   return { key, songName };
 }
 
-// list maps for a mapper folder
 function listMapsForMapper(mapperName, baseUrl) {
   const dir = path.join(MAPS_DIR, mapperName);
   if (!fs.existsSync(dir)) return [];
@@ -171,25 +165,22 @@ function listMapsForMapper(mapperName, baseUrl) {
         filename: f,
         size: stat.size,
         url: `${baseUrl}/maps/${encodeURIComponent(mapperName)}/${encodeURIComponent(f)}`
-        // later we can add "sha1" if you want integrity checks
       };
     })
-    .sort((a,b) => a.songName.localeCompare(b.songName));
+    .sort((a, b) => a.songName.localeCompare(b.songName));
 }
 
-// GET /api/v1/maps  → { mappers: [ { name, maps: [...] }, ... ] }
 app.get('/api/v1/maps', (req, res) => {
   const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
   const mappers = fs.readdirSync(MAPS_DIR, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name)
-    .sort((a,b) => a.localeCompare(b))
+    .sort((a, b) => a.localeCompare(b))
     .map(name => ({ name, maps: listMapsForMapper(name, baseUrl) }));
 
   res.json({ mappers });
 });
 
-// GET /api/v1/maps/:mapper  → { name, maps: [...] }
 app.get('/api/v1/maps/:mapper', (req, res) => {
   const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
   const { mapper } = req.params;
@@ -199,13 +190,23 @@ app.get('/api/v1/maps/:mapper', (req, res) => {
   res.json({ name: mapper, maps: listMapsForMapper(mapper, baseUrl) });
 });
 
-// tiny health check if useful
+// ----------------------------
+// 🧠 Health & Ping Checks
+// ----------------------------
 app.get('/health', (_req, res) => res.send('ok'));
 
+// ✅ Beat Saber PCVR Mod Connectivity Check
+app.get('/ping', (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "pong",
+    serverTime: new Date().toISOString()
+  });
+});
 
 // ----------------------------
 // 🚀 Start Server
 // ----------------------------
 app.listen(PORT, () => {
-  console.log(`✅ ZRS Test Map Server (Mapper Mode + BPLIST) running at http://localhost:${PORT}`);
+  console.log(`✅ ZRS Test Map Server running at http://localhost:${PORT}`);
 });
