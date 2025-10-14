@@ -204,6 +204,12 @@ app.get('/ping', (req, res) => {
   });
 });
 
+// Serve ZRS Slots page
+app.get('/zrsslots', (req, res) => {
+  res.sendFile(__dirname + '/public/zrsslots.html');
+});
+
+
 // ----------------------------
 // 🚀 Start Server
 // ----------------------------
