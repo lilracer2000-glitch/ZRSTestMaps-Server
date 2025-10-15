@@ -5,11 +5,9 @@ const maps = [
 ];
 
 const difficulties = ["Easy", "Normal", "Hard", "Expert", "Expert+"];
-
 const modifiers = [
-  "No Fail", "Insta Fail", "Ghost Notes",
-  "Faster Song", "Disappearing Arrows",
-  "No Bombs", "Pro Mode", "Super Fast Song"
+  "No Fail", "Insta Fail", "Ghost Notes", "Faster Song",
+  "Disappearing Arrows", "No Bombs", "Pro Mode", "Super Fast Song"
 ];
 
 const reels = {
@@ -25,32 +23,50 @@ spinButton.addEventListener('click', () => {
   spinButton.disabled = true;
   resultText.textContent = "Spinning... 🎲";
 
-  let spinDuration = 2000;
+  let spinDuration = 2500;
 
-  const spinInterval = setInterval(() => {
-    reels.map.textContent = maps[Math.floor(Math.random() * maps.length)];
-    reels.difficulty.textContent = difficulties[Math.floor(Math.random() * difficulties.length)];
-    reels.modifier.textContent = modifiers[Math.floor(Math.random() * modifiers.length)];
-  }, 100);
+  // create animation spans for scroll effect
+  Object.values(reels).forEach(reel => {
+    reel.innerHTML = "";
+    const list = document.createElement("div");
+    list.classList.add("scroll-list");
+    const items = [];
+    for (let i = 0; i < 10; i++) {
+      const text = document.createElement("span");
+      text.textContent = randomItem(reel.id);
+      list.appendChild(text);
+      items.push(text);
+    }
+    reel.appendChild(list);
+    list.style.animation = `spinReel ${spinDuration / 1000}s ease-in-out infinite`;
+  });
 
   setTimeout(() => {
-    clearInterval(spinInterval);
-
-    const finalMap = maps[Math.floor(Math.random() * maps.length)];
-    const finalDiff = difficulties[Math.floor(Math.random() * difficulties.length)];
-    const finalMods = [];
-
-    const modCount = Math.floor(Math.random() * 3) + 1;
-    for (let i = 0; i < modCount; i++) {
-      const mod = modifiers[Math.floor(Math.random() * modifiers.length)];
-      if (!finalMods.includes(mod)) finalMods.push(mod);
-    }
+    Object.values(reels).forEach(r => r.innerHTML = "");
+    const finalMap = randomItem('map');
+    const finalDiff = randomItem('difficulty');
+    const finalMods = getRandomModifiers();
 
     reels.map.textContent = finalMap;
     reels.difficulty.textContent = finalDiff;
     reels.modifier.textContent = finalMods.join(", ");
-
-    resultText.textContent = `🧠 Result: ${finalMap} | ${finalDiff} | ${finalMods.join(", ")}`;
+    resultText.textContent = `🧠 ${finalMap} | ${finalDiff} | ${finalMods.join(", ")}`;
     spinButton.disabled = false;
   }, spinDuration);
 });
+
+function randomItem(type) {
+  if (type === 'map') return maps[Math.floor(Math.random() * maps.length)];
+  if (type === 'difficulty') return difficulties[Math.floor(Math.random() * difficulties.length)];
+  return modifiers[Math.floor(Math.random() * modifiers.length)];
+}
+
+function getRandomModifiers() {
+  const finalMods = [];
+  const modCount = Math.floor(Math.random() * 3) + 1;
+  while (finalMods.length < modCount) {
+    const mod = modifiers[Math.floor(Math.random() * modifiers.length)];
+    if (!finalMods.includes(mod)) finalMods.push(mod);
+  }
+  return finalMods;
+}
