@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>ZRS Slots — 3D Notes</title>
+  <style>
+    :root{
+      --bg-blur: 10px;
+      --hud-glass: rgba(255,255,255,0.08);
+      --hud-stroke: rgba(255,255,255,0.25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0; overflow:hidden; color:#fff; font-family:system-ui, Segoe UI, Roboto, Inter, sans-serif;
+      background:#0b0f1a; /* fallback */
+    }
+
+    /* VRZIP background layer */
+    .bg{
+      position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(1200px 800px at 70% 20%, rgba(92,0,255,0.18), transparent 60%),
+        radial-gradient(900px 700px at 20% 80%, rgba(0,153,255,0.16), transparent 60%),
+        #0b0f1a url('images/VRZip.png') center/contain no-repeat; /* ensure correct path */
+      filter: saturate(1.1);
+    }
+
+    /* Canvas wrapper to preserve aspect + safe areas on mobile */
+    #stage{
+      position:fixed; inset:0; z-index:1;
+    }
+
+    /* Bottom player HUD that feels floaty */
+    .hud{
+      position:fixed; left:0; right:0; bottom:0; z-index:2;
+      display:flex; gap:12px; align-items:center; justify-content:center;
+      padding:12px 14px; margin: env(safe-area-inset-bottom);
+      backdrop-filter: blur(var(--bg-blur));
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.35));
+    }
+    .hud .pill{
+      display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:999px;
+      background: var(--hud-glass); border:1px solid var(--hud-stroke);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      transform: translateZ(0); /* create a bit of visual separation */
+    }
+    .hud .avatar{
+      width:28px; height:28px; border-radius:50%; background:#222; overflow:hidden; flex:0 0 auto;
+      border:1px solid rgba(255,255,255,0.25);
+    }
+    .hud .name{ font-weight:600; letter-spacing:0.2px; }
+    .hud .status{ opacity:0.7; font-size:12px; }
+
+    /* Touch-friendly buttons (optional controls) */
+    .controls{
+      position:fixed; top:12px; left:50%; transform:translateX(-50%);
+      z-index:3; display:flex; gap:8px;
+    }
+    .btn{
+      appearance:none; border:1px solid var(--hud-stroke); background:var(--hud-glass);
+      color:#fff; padding:10px 14px; border-radius:999px; cursor:pointer; font-weight:600;
+      backdrop-filter: blur(var(--bg-blur));
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    /* Small helper for orientation */
+    @media (max-width: 700px){
+      .hud{ gap:8px; }
+      .name{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background with VRZIP logo (ensure images/VRZip.png exists). -->
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- Three.js will render into this container -->
+  <div id="stage"></div>
+
+  <!-- Simple controls (toggle float, recenter, cycle set) -->
+  <div class="controls">
+    <button class="btn" id="btnFloat">Toggle Float</button>
+    <button class="btn" id="btnRecenter">Recenter</button>
+    <button class="btn" id="btnCycle">Cycle Colors</button>
+  </div>
+
+  <!-- Floating player HUD (example avatars; replace sources) -->
+  <div class="hud">
+    <div class="pill" style="transform:translateY(-6px)">
+      <img class="avatar" src="images/avatars/vrzip.png" alt="VRZIP" />
+      <div>
+        <div class="name">VRZIP</div>
+        <div class="status">Ready</div>
+      </div>
+    </div>
+    <div class="pill" style="transform:translateY(-3px)">
+      <img class="avatar" src="images/avatars/sa-mcc.png" alt="Sa‑Mcc" />
+      <div>
+        <div class="name">Sa‑Mcc</div>
+        <div class="status">Connected</div>
+      </div>
+    </div>
+    <div class="pill">
+      <img class="avatar" src="images/avatars/astra.png" alt="Astra" />
+      <div>
+        <div class="name">Astra</div>
+        <div class="status">Spinning…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- three.js + controls (CDN) -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+  // ====== ZRS Slots — 3D Notes (Quest + Mobile friendly) ======
+  // ASSETS you need to provide (place under /images/notes/):
+  //   red.png   blue.png   purple.png   (512–1024 px with alpha)
+  // If purple showed as green previously, ensure correct file and path.
+  // We also enforce sRGB for accurate color.
+
+  const STAGE = document.getElementById('stage');
+
+  let scene, camera, renderer, controls;
+  let group;             // holds our notes
+  let shouldFloat = true;
+  let t0 = performance.now();
+  let cycleIndex = 0;    // swap note sets (future: OST/DLC packs)
+
+  init(); animate();
+
+  function init(){
+    scene = new THREE.Scene();
+
+    // Camera: slightly wide FOV for VR-like depth, but comfortable on phones
+    const fov = 55;
+    const aspect = window.innerWidth / window.innerHeight;
+    camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 200);
+    camera.position.set(0, 0.6, 3.4);
+
+    renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding; // color correctness
+    STAGE.appendChild(renderer.domElement);
+
+    // Lights for subtle shading
+    const amb = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(amb);
+    const key = new THREE.DirectionalLight(0xffffff, 0.9);
+    key.position.set(2, 3, 4);
+    scene.add(key);
+
+    // Controls: orbit with constrained tilt (Quest controllers will still work as pointer/drag)
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 2.0; controls.maxDistance = 6.0;
+    controls.minPolarAngle = Math.PI*0.25; // limit looking too far up/down
+    controls.maxPolarAngle = Math.PI*0.66;
+
+    // Create note cards (planes) with textures. Slight thickness via edges (optional)
+    group = new THREE.Group();
+    scene.add(group);
+
+    const loader = new THREE.TextureLoader();
+    const texRed    = loader.load('images/notes/red.png',  t => { t.encoding = THREE.sRGBEncoding; });
+    const texBlue   = loader.load('images/notes/blue.png', t => { t.encoding = THREE.sRGBEncoding; });
+    const texPurple = loader.load('images/notes/purple.png', t => { t.encoding = THREE.sRGBEncoding; });
+
+    // helper to build a note plane
+    function makeNote(texture){
+      const ratio = 1; // assume square; if not, set from texture.image.width/height on load
+      const H = 0.9; // **slightly bigger than before**
+      const W = H * ratio;
+      const mat = new THREE.MeshStandardMaterial({
+        map: texture,
+        transparent: true,
+        roughness: 0.35,
+        metalness: 0.0,
+        side: THREE.DoubleSide
+      });
+      const geo = new THREE.PlaneGeometry(W, H, 1, 1);
+      const mesh = new THREE.Mesh(geo, mat);
+      // tiny bevel illusion via drop shadow card (optional)
+      const shadowGeo = new THREE.PlaneGeometry(W*1.05, H*1.05);
+      const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent:true, opacity:0.18});
+      const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+      shadow.position.set(0, -0.02, -0.03);
+      const g = new THREE.Group();
+      g.add(shadow); g.add(mesh);
+      return g;
+    }
+
+    // Arrange three notes in space (slot-style row)
+    const notes = [ makeNote(texRed), makeNote(texBlue), makeNote(texPurple) ];
+    const spacing = 1.05;
+    notes[0].position.set(-spacing, 0.1, 0);
+    notes[1].position.set(0, 0, 0);
+    notes[2].position.set(spacing, -0.05, 0);
+
+    // angle them slightly for 3D presence
+    notes[0].rotation.y = 0.2; notes[2].rotation.y = -0.2;
+    notes.forEach(n => group.add(n));
+
+    // Gentle scene tilt for 3D
+    group.rotation.x = -0.05;
+
+    // UI wiring
+    document.getElementById('btnFloat').addEventListener('click', ()=> shouldFloat = !shouldFloat);
+    document.getElementById('btnRecenter').addEventListener('click', ()=> recenter());
+    document.getElementById('btnCycle').addEventListener('click', ()=> cycle());
+
+    window.addEventListener('resize', onResize);
+  }
+
+  function onResize(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = (performance.now() - t0) * 0.001;
+
+    if(shouldFloat){
+      const amp = 0.05; // subtle bob
+      group.children.forEach((g, i) => {
+        g.position.y += Math.sin(t*1.2 + i) * 0.0025; // very slight per-frame drift
+        g.rotation.z = Math.sin(t*0.6 + i)*0.03;
+      });
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  function recenter(){
+    camera.position.set(0, 0.6, 3.4);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
+
+  function cycle(){
+    // Placeholder: you can later swap to other note sets (e.g., different styles)
+    cycleIndex = (cycleIndex + 1) % 3;
+    const hue = [0, 20, -20][cycleIndex];
+    scene.traverse(obj => {
+      if(obj.isMesh && obj.material && obj.material.color){
+        obj.material.color.setHSL(0, 0, 0.5);
+      }
+    });
+  }
+
+  // Optional: basic pointer parallax on mobile/desktop for extra depth
+  (function pointerParallax(){
+    let px = 0, py = 0; let tx = 0, ty = 0; const ease = 0.06;
+    function apply(){
+      tx += (px - tx) * ease; ty += (py - ty) * ease;
+      group.rotation.y = THREE.MathUtils.degToRad( -tx * 6 );
+      group.position.y = ty * 0.12; // gentle vertical follow
+      requestAnimationFrame(apply);
+    }
+    apply();
+
+    window.addEventListener('pointermove', e => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      px = x; py = -y;
+    }, {passive:true});
+  })();
+
+  // If WebGL is not available, show a friendly message
+  if(!window.WebGLRenderingContext){
+    const msg = document.createElement('div');
+    msg.textContent = 'WebGL not supported on this device.';
+    Object.assign(msg.style, {position:'fixed',inset:'0',display:'grid',placeItems:'center',zIndex:10,background:'rgba(0,0,0,0.8)'});
+    document.body.appendChild(msg);
+  }
+  </script>
+</body>
+</html>

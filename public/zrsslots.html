@@ -1,49 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZRS Slots 🎰</title>
-  <link rel="stylesheet" href="zrsslots.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZRS Randomizer ⚔️</title>
+  <link rel="stylesheet" href="zrsslots.css" />
 </head>
 <body>
-  <div class="slot-machine">
-    <h1 class="title">⚔️ ZRS Randomizer 🎶</h1>
+  <!-- Header -->
+  <header class="zrs-header">
+    <h2>⚔️ ZRS Randomizer 🎶</h2>
+    <div class="controls">
+      <label><input type="checkbox" checked> OST</label>
+      <label><input type="checkbox" checked> DLC</label>
+      <label><input type="checkbox" checked> Mods</label>
+    </div>
+  </header>
+
+  <!-- Slot Machine Section -->
+  <main class="slot-machine">
     <div class="reels">
-      <div class="reel red" id="map">?</div>
-      <div class="reel blue" id="difficulty">?</div>
-      <div class="reel purple" id="modifier">?</div>
+      <div class="reel red" id="map"><span>?</span></div>
+      <div class="reel blue" id="difficulty"><span>?</span></div>
+      <div class="reel green" id="modifier"><span>?</span></div>
     </div>
     <button id="spinButton" class="spin-button">ZRS SPIN</button>
-    <p id="result" class="result"></p>
-  </div>
+    <p id="result" class="result">Pick something to roll...</p>
+  </main>
+
+  <!-- Avatars -->
+  <footer class="avatar-bar">
+    <h3>Ready to Slice!</h3>
+    <div class="avatars">
+      <a href="https://beatleader.com/u/76561197963075686/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/76561197963075686R16.png" alt="VRZIP" title="VRZIP">
+      </a>
+      <a href="https://beatleader.com/u/9039006826139884/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/9039006826139884R38.png" alt="ZoeDarlin" title="ZoeDarlin">
+      </a>
+      <a href="https://beatleader.com/u/308123/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/308123R39.png" alt="LYFEGIVER" title="LYFEGIVER">
+      </a>
+      <a href="https://beatleader.com/u/288863/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/288863R5.png" alt="Sa_Mcc" title="Sa_Mcc">
+      </a>
+      <a href="https://beatleader.com/u/311751/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/oculusavatar.png" alt="Dog" title="Dog">
+      </a>
+      <a href="https://beatleader.com/u/322739/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/322739R6.png" alt="kelroyx" title="kelroyx">
+      </a>
+      <a href="#" title="Astra_AI">
+        <img src="images/avatars/astra.png" alt="Astra_AI" data-astra="true">
+      </a>
+    </div>
+  </footer>
 
   <script src="zrsslots.js"></script>
-  
-<div class="avatar-bar">
-  <h3>Ready to Slice!</h3>
-  <div class="avatars">
-    <a href="https://beatleader.com/u/76561197963075686/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/76561197963075686R16.png" alt="VRZIP" title="VRZIP">
-    </a>
-    <a href="https://beatleader.com/u/9039006826139884/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/9039006826139884R38.png" alt="ZoeDarlin" title="ZoeDarlin">
-    </a>
-    <a href="https://beatleader.com/u/308123/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/308123R39.png" alt="LYFEGIVER" title="LYFEGIVER">
-    </a>
-    <a href="https://beatleader.com/u/288863/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/288863R5.png" alt="Sa_Mcc" title="Sa_Mcc">
-    </a>
-    <a href="https://beatleader.com/u/311751/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/oculusavatar.png" alt="Dog" title="Dog">
-    </a>
-    <a href="https://beatleader.com/u/322739/scores/date/desc/1" target="_blank">
-      <img src="https://cdn.assets.beatleader.com/322739R6.png" alt="kelroyx" title="kelroyx">
-    </a>
-  </div>
-</div>
-
-
 </body>
 </html>

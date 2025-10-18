@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>ZRS Slots — Showcase v1.0</title>
+  <link rel="stylesheet" href="zrsslots.css">
+
+  <style>
+    :root{
+      --ink:#fff; --muted:rgba(255,255,255,0.75);
+      --glass:rgba(255,255,255,0.08);
+      --stroke:rgba(255,255,255,0.25);
+      --accent:#8a87ff;         /* hybrid glow accent */
+      --accent-2:#23d5ff;       /* cyan edge */
+      --bg:#070b14;
+      --glow-strong:0 0 32px rgba(138,135,255,0.55), 0 0 64px rgba(35,213,255,0.4);
+      --glow-soft:0 0 20px rgba(138,135,255,0.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; overflow:hidden; color:var(--ink);
+      font-family:system-ui, Segoe UI, Roboto, Inter, sans-serif;
+      background: var(--bg);
+    }
+
+	/* ===== Background (Hybrid Glow) ===== */
+	.bg-wrap {
+	  position: fixed;
+	  inset: 0;
+	  z-index: 0; /* base layer under canvas */
+	  overflow: hidden;
+	  pointer-events: none;
+	}
+
+	.bg-grad {
+	  position: absolute;
+	  inset: -20%;
+	  background:
+		radial-gradient(900px 600px at 80% 10%, rgba(130, 0, 255, 0.25), transparent 60%),
+		radial-gradient(900px 600px at 20% 90%, rgba(0, 170, 255, 0.22), transparent 60%),
+		linear-gradient(180deg, #0c1222, #070b14 40%, #060910);
+	  filter: saturate(1.05);
+	  z-index: 1;
+	}
+
+	.bg-img {
+	  position: absolute;
+	  inset: 0;
+	  background: url('/images/Beat-Saber.webp') center/cover no-repeat;
+	  opacity: 0.5;
+	  filter: brightness(1.1) contrast(1.05) saturate(1.2);
+	  z-index: 0; /* sits behind everything except body */
+	}
+
+	/* ===== Three.js Canvas Layer ===== */
+	canvas {
+	  position: fixed !important;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  z-index: 2; /* above background, below UI */
+	}
+
+
+    /* Gentle parallax */
+    .parallax {will-change: transform; transition: transform 0.2s ease-out;}
+
+    /* ===== Topbar ===== */
+    .topbar{
+      position:fixed; top:0; left:0; right:0; z-index:5;
+      display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+      padding:10px max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left));
+      background:linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.05));
+      border-bottom:1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px;
+      background:var(--glass); border:1px solid var(--stroke);
+      box-shadow: var(--glow-soft);
+      font-weight:800; letter-spacing:.4px;
+    }
+    .brand .spark{filter: drop-shadow(0 0 8px rgba(255,255,255,0.6));}
+    .seg{
+      display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:999px;
+      background:var(--glass); border:1px solid var(--stroke);
+    }
+    .seg label{display:flex; align-items:center; gap:6px; font-weight:600; cursor:pointer; opacity:.95}
+    .seg input{width:18px; height:18px}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:1px solid var(--stroke); background:var(--glass);
+      color:var(--ink); padding:10px 14px; border-radius:999px; cursor:pointer; font-weight:700;
+      backdrop-filter: blur(10px);
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      border-color: rgba(138,135,255,0.6);
+      box-shadow: inset 0 0 0 1px rgba(35,213,255,0.35), var(--glow-soft);
+      position:relative; overflow:hidden;
+    }
+    /* SPIN breathing */
+    .btn.primary::after{
+      content:""; position:absolute; inset:-30%;
+      background: radial-gradient(200px 200px at 50% 50%, rgba(138,135,255,0.3), transparent 60%);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe{0%,100%{opacity:.45; transform:scale(1)} 50%{opacity:.9; transform:scale(1.15)}}
+
+    /* ===== Small result chip under topbar ===== */
+    .toast{
+      position:fixed; top:64px; left:0; right:0; z-index:4;
+      display:flex; justify-content:center; pointer-events:none; padding:0 12px;
+    }
+    .toast .card{
+      pointer-events:auto; padding:10px 14px; border-radius:12px;
+      background:var(--glass); border:1px solid var(--stroke);
+      text-align:center; font-weight:800; letter-spacing:0.2px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      max-width:min(520px, 92vw);
+    }
+    .toast .meta{font-size:12px; color:var(--muted); margin-top:2px}
+
+    /* ===== Stage ===== */
+    #stage{position:fixed; inset:0; z-index:1}
+
+    /* ===== Big result banner ===== */
+    .big-result{
+      position:fixed; left:0; right:0; bottom:84px; z-index:3;
+      display:flex; justify-content:center; padding:0 16px;
+    }
+    .big-result .strip{
+      display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap;
+      padding:14px 18px; border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border:1px solid rgba(255,255,255,0.2);
+      box-shadow: var(--glow-strong);
+      font-weight:900; letter-spacing:.5px;
+      text-shadow:0 1px 0 rgba(0,0,0,0.2);
+      transform: translateY(18px); opacity:0; /* enter anim default */
+    }
+    .big-result .chip{
+      padding:8px 12px; border-radius:999px; backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.25);
+      font-size:18px;
+    }
+    .chip.title{color:#ffd8ff}
+    .chip.pack{color:#bbf1ff}
+    .chip.mods{color:#c8ffd8}
+
+    .reveal{animation: reveal .55s cubic-bezier(.2,.9,.2,1) forwards}
+    @keyframes reveal{to{opacity:1; transform: translateY(0)}}
+
+    /* ===== Avatars bar ===== */
+    .avatar-bar{
+      position:fixed; left:0; right:0; bottom:16px; z-index:4;
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+    }
+    .avatar-bar h3{
+      margin:0; font-size:14px; font-weight:800; letter-spacing:.3px; color:#fff; opacity:.9;
+      text-shadow: 0 0 18px rgba(138,135,255,0.6);
+    }
+    .avatars{display:flex; gap:14px}
+    .avatars a{display:inline-grid; place-items:center}
+    .avatars img{
+      width:46px; height:46px; border-radius:50%; object-fit:cover;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 18px rgba(35,213,255,0.45);
+      border:1px solid rgba(255,255,255,0.35);
+      background:#111;
+    }
+    /* Astra halo */
+    .avatars img[data-astra="true"]{
+      box-shadow: 0 0 12px rgba(138,135,255,0.8), 0 0 28px rgba(35,213,255,0.6), 0 12px 24px rgba(0,0,0,0.6);
+      animation: halo 2.2s ease-in-out infinite;
+    }
+    @keyframes halo{
+      0%,100%{filter: drop-shadow(0 0 6px rgba(138,135,255,0.9))}
+      50%{filter: drop-shadow(0 0 12px rgba(35,213,255,0.9))}
+    }
+
+    @media (max-width: 700px){
+      .avatar-bar h3{display:none}
+      .brand{font-size:14px}
+      .chip{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+	<!-- Background Layer -->
+	<div id="bg" class="bg-wrap parallax">
+	  <div class="bg-grad"></div>
+	  <div class="bg-img"></div>
+	</div>
+  <!-- Background -->
+	.bg-img {
+	  position: absolute;
+	  inset: 0;
+	  background: url('images/zrsslotsbg.png') center/cover no-repeat fixed;
+	  opacity: 0.45;
+	  filter: brightness(1.15) contrast(1.1) saturate(1.25);
+	  z-index: -3;
+	  animation: fadeInBg 2s ease-out;
+	}
+	@keyframes fadeInBg {
+	  from { opacity: 0; transform: scale(1.05); }
+	  to { opacity: 0.45; transform: scale(1); }
+	}
+
+	/* VRZIP overlay pulse */
+	.bg-img::after {
+	  content: "";
+	  position: absolute;
+	  inset: 0;
+	  background: url('images/VRZip.png') center/30% no-repeat;
+	  opacity: 0.12;
+	  animation: pulseGlow 8s infinite alternate;
+	}
+	@keyframes pulseGlow {
+	  from { opacity: 0.1; filter: brightness(1); }
+	  to { opacity: 0.25; filter: brightness(1.4); }
+	}
+
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <span class="spark">⚔️</span> ZRS Randomizer <span class="spark">🎶</span>
+    </div>
+    <div class="seg">
+      <label><input type="checkbox" id="chk-ost" checked> OST</label>
+      <label><input type="checkbox" id="chk-dlc" checked> DLC</label>
+      <label><input type="checkbox" id="chk-mods" checked> Mods</label>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnFloat">Float</button>
+      <button class="btn" id="btnRecenter">Recenter</button>
+      <button class="btn" id="btnCycle">Cycle</button>
+      <button class="btn primary" id="btnRoll">💿 ZRS SPIN</button>
+    </div>
+  </div>
+
+  <!-- Small toast -->
+  <div class="toast">
+    <div class="card">
+      <div id="rollText">Pick something to roll…</div>
+      <div id="rollMeta" class="meta"></div>
+    </div>
+  </div>
+
+  <!-- Stage -->
+  <div id="stage"></div>
+
+  <!-- Big result -->
+  <div class="big-result">
+    <div id="bigResult" class="strip">
+      <span class="chip title">—</span>
+      <span class="chip pack">—</span>
+      <span class="chip mods">—</span>
+    </div>
+  </div>
+
+  <!-- Avatars -->
+  <div class="avatar-bar">
+    <h3>Ready to Slice!</h3>
+    <div class="avatars">
+      <a href="https://beatleader.com/u/76561197963075686/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/76561197963075686R16.png" alt="VRZIP" title="VRZIP">
+      </a>
+      <a href="https://beatleader.com/u/9039006826139884/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/9039006826139884R38.png" alt="ZoeDarlin" title="ZoeDarlin">
+      </a>
+      <a href="https://beatleader.com/u/308123/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/308123R39.png" alt="LYFEGIVER" title="LYFEGIVER">
+      </a>
+      <a href="https://beatleader.com/u/288863/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/288863R5.png" alt="Sa_Mcc" title="Sa_Mcc">
+      </a>
+      <a href="https://beatleader.com/u/322739/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/322739R6.png" alt="kelroyx" title="kelroyx">
+      </a>
+      <a href="https://beatleader.com/u/0000000/scores/date/desc/1" target="_blank" title="Astra_AI">
+        <img src="/images/avatars/astra.png" alt="Astra_AI" data-astra="true">
+      </a>
+    </div>
+  </div>
+
+  <!-- Three + postprocessing (stable r0.159.0 ESM) -->
+  <script type="module">
+    import * as THREE from "https://esm.sh/three@0.159.0";
+    import { OrbitControls } from "https://esm.sh/three@0.159.0/examples/jsm/controls/OrbitControls.js";
+    import { EffectComposer } from "https://esm.sh/three@0.159.0/examples/jsm/postprocessing/EffectComposer.js";
+    import { RenderPass } from "https://esm.sh/three@0.159.0/examples/jsm/postprocessing/RenderPass.js";
+    import { UnrealBloomPass } from "https://esm.sh/three@0.159.0/examples/jsm/postprocessing/UnrealBloomPass.js";
+    import { ostData, dlcData } from "/data/slots-data.js";
+
+    console.log("Three.js revision:", THREE.REVISION);
+
+    // --- PATCH for potential onBuild access in r160+ browsers (safe no-op here) ---
+    for (const proto of [THREE.Material, THREE.MeshBasicMaterial, THREE.MeshStandardMaterial, THREE.ShaderMaterial, THREE.RawShaderMaterial]) {
+      if (!proto.prototype.onBuild) proto.prototype.onBuild = function(){};
+    }
+
+    // ===== UI refs =====
+    const chkOst = document.getElementById('chk-ost');
+    const chkDlc = document.getElementById('chk-dlc');
+    const chkMods = document.getElementById('chk-mods');
+    const rollBtn = document.getElementById('btnRoll');
+    const rollText = document.getElementById('rollText');
+    const rollMeta = document.getElementById('rollMeta');
+    const big = document.getElementById('bigResult');
+
+    // Persist toggles
+    const PREF_KEY = 'zrs-slots-toggles';
+    (function loadPrefs(){
+      try{
+        const p = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+        if('ost' in p) chkOst.checked = !!p.ost;
+        if('dlc' in p) chkDlc.checked = !!p.dlc;
+        if('mods' in p) chkMods.checked = !!p.mods;
+      }catch{}
+    })();
+    function savePrefs(){
+      localStorage.setItem(PREF_KEY, JSON.stringify({ ost:chkOst.checked, dlc:chkDlc.checked, mods:chkMods.checked }));
+    }
+    [chkOst,chkDlc,chkMods].forEach(el => el.addEventListener('change', savePrefs));
+
+    // ===== Pools =====
+    const packOf = new Map();  // song -> pack
+    function flatten(obj){
+      const out = [];
+      Object.entries(obj).forEach(([pack, songs])=>{
+        songs.forEach(s=>{ out.push(s); packOf.set(s,pack); });
+      });
+      return out;
+    }
+    const allOst = flatten(ostData);
+    const allDlc = flatten(dlcData);
+
+    // simple modifier pool
+    const MODS = [
+      "No Modifiers",
+      "No Fail", "Faster Song", "Disappearing Arrows",
+      "Ghost Notes", "Insta Fail",
+      "No Bombs", "No Arrows", "Pro Mode"
+    ];
+
+    async function getModsFromApi(){
+      if(!chkMods.checked) return [];
+      try{
+        const res = await fetch('/maps');     // if your endpoint differs, tweak here
+        if(!res.ok) return [];
+        const data = await res.json();
+        return (Array.isArray(data) ? data : []).map(m => m.title || m.name || m.songName).filter(Boolean);
+      }catch{ return []; }
+    }
+
+    function pick(list){ return list[Math.floor(Math.random()*list.length)]; }
+
+    // ===== 3D Stage =====
+    const STAGE = document.getElementById('stage');
+    let scene, camera, renderer, controls, group, composer;
+    let shouldFloat = true, t0 = performance.now();
+
+    init3d(); animate();
+    hookUi(); parallaxBg();
+
+    function init3d(){
+	  scene = new THREE.Scene();
+
+	  camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+	  camera.position.set(0, 0.8, 3.8);
+
+	  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+	  renderer.setSize(window.innerWidth, window.innerHeight);
+	  STAGE.appendChild(renderer.domElement);
+	  renderer.domElement.style.zIndex = '1';
+	  renderer.domElement.style.position = 'relative';
+
+
+	  // 🔧 Ensure canvas has correct class for z-index styling
+	  renderer.domElement.classList.add('webgl');
+
+	  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+	  const key = new THREE.DirectionalLight(0xffffff, 0.95);
+	  key.position.set(2, 3, 4);
+	  scene.add(key);
+
+	  controls = new OrbitControls(camera, renderer.domElement);
+	  controls.enableDamping = true;
+	  controls.enablePan = false;
+	  controls.minDistance = 2.3;
+	  controls.maxDistance = 6.5;
+	  controls.minPolarAngle = Math.PI * 0.2;
+	  controls.maxPolarAngle = Math.PI * 0.68;
+
+	  group = new THREE.Group();
+	  scene.add(group);
+
+	  const loader = new THREE.TextureLoader();
+	  const texRed = loader.load('/images/notes/red.png');
+	  const texBlue = loader.load('/images/notes/blue.png');
+	  const texPurple = loader.load('/images/notes/purple.png');
+
+	  const notes = [ makeNote(texRed), makeNote(texBlue), makeNote(texPurple) ];
+	  const spacing = 1.25;
+	  notes[0].position.set(-spacing, 0.08, 0);
+	  notes[1].position.set(0, 0, 0);
+	  notes[2].position.set(spacing, -0.06, 0);
+	  notes[0].rotation.y = 0.18;
+	  notes[2].rotation.y = -0.18;
+	  notes.forEach(n => group.add(n));
+	  group.rotation.x = -0.04;
+	
+
+
+      // Post FX
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.9, 0.45, 0.85);
+      composer.addPass(bloom);
+
+      window.addEventListener('resize', ()=>{
+        camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    function makeNote(texture){
+      const H = 1.0, W = 1.0;
+      const mat = new THREE.MeshStandardMaterial({ map: texture, transparent:true, roughness:0.34, metalness:0.02, side:THREE.DoubleSide });
+      const geo = new THREE.PlaneGeometry(W, H, 1, 1);
+      const mesh = new THREE.Mesh(geo, mat);
+
+      // fake drop shadow
+      const sGeo = new THREE.PlaneGeometry(W*1.05, H*1.05);
+      const sMat = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.18 });
+      const shadow = new THREE.Mesh(sGeo, sMat);
+      shadow.position.set(0, -0.02, -0.03);
+
+      const g = new THREE.Group(); g.add(shadow); g.add(mesh);
+      return g;
+    }
+
+    function animate(){
+      requestAnimationFrame(animate);
+      const t = (performance.now() - t0) * 0.001;
+
+      if(shouldFloat){
+        group.children.forEach((g, i)=>{
+          g.position.y += Math.sin(t*1.2 + i) * 0.0025;
+          g.rotation.z = Math.sin(t*0.6 + i)*0.03;
+        });
+      }
+      controls.update();
+      composer.render();
+    }
+
+    function hookUi(){
+      document.getElementById('btnFloat').addEventListener('click', ()=> shouldFloat = !shouldFloat);
+      document.getElementById('btnRecenter').addEventListener('click', ()=> { camera.position.set(0,0.8,3.8); controls.target.set(0,0,0); controls.update(); });
+      document.getElementById('btnCycle').addEventListener('click', ()=> { /* reserved for future visual cycles */ });
+
+      rollBtn.addEventListener('click', doSpin);
+    }
+
+    function parallaxBg(){
+      const bg = document.getElementById('bg');
+      let px=0, py=0, tx=0, ty=0; const ease=0.06;
+      (function loop(){
+        tx += (px - tx) * ease; ty += (py - ty) * ease;
+        bg.style.transform = `translate3d(${tx*18}px, ${ty*12}px, 0) scale(1.06)`;
+        requestAnimationFrame(loop);
+      })();
+      window.addEventListener('pointermove', e=>{
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = (e.clientY / window.innerHeight) * 2 - 1;
+        px = x; py = y;
+      }, {passive:true});
+    }
+
+    // ===== Spin =====
+    async function doSpin(){
+      savePrefs();
+
+      // pools
+      const pools = [];
+      if(chkOst.checked) pools.push(...Object.values(ostData));
+      if(chkDlc.checked) pools.push(...Object.values(dlcData));
+
+      const songPool = pools.flat();
+      const modsPool = chkMods.checked ? MODS : ["No Modifiers"];
+
+      // include external mods list if available
+      let extraMods = [];
+      try { extraMods = await getModsFromApi(); } catch {}
+      if(extraMods.length) songPool.push(...extraMods);
+
+      if(!songPool.length){
+        rollText.textContent = 'Select at least one source (OST / DLC / Mods).';
+        rollMeta.textContent = ''; return;
+      }
+
+      // spin wobble
+      const spinTime = 900;
+      const start = performance.now();
+      (function spin(){
+        const p = Math.min(1, (performance.now() - start)/spinTime);
+        group.rotation.z = Math.sin(p*8*Math.PI) * (1 - p) * 0.28;
+        if(p < 1) requestAnimationFrame(spin);
+      })();
+
+      const song = pick(songPool);
+      const pack = packOf.get(song) || guessPack(song);
+      const mods = pick(modsPool);
+
+      // small chip
+      rollText.textContent = song;
+      rollMeta.textContent = `From: ${pack}`;
+
+      // big banner
+      const [titleEl, packEl, modsEl] = big.querySelectorAll('.chip');
+      titleEl.textContent = song;
+      packEl.textContent = packLabel(pack);
+      modsEl.textContent = mods;
+      big.classList.remove('reveal'); void big.offsetWidth; big.classList.add('reveal');
+    }
+
+    function guessPack(song){
+      // If external mod, label as Mods
+      return "Mods";
+    }
+    function packLabel(p){
+      // Show DLC artist nicely when pack is a well-known name, else the pack itself
+      return p;
+    }
+  </script>
+</body>
+</html>
