@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌀 ZRS Walkabout Mini Golf Randomizer</title>
+  <link rel="stylesheet" href="zrswamg.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-overlay"></div>
+
+  <header>
+    <img src="images/zrswamg-logo.png" alt="ZRS Walkabout Mini Golf" class="brand-logo">
+    <h1>🌀 ZRS Walkabout Mini Golf Randomizer</h1>
+    <p>Spin the wheels to pick your next adventure!</p>
+  </header>
+
+  <main>
+    <div id="wheel-container">
+      <div class="wheel" id="course-wheel">
+        <div class="wheel-label">COURSE</div>
+      </div>
+      <div class="wheel" id="difficulty-wheel">
+        <div class="wheel-label">DIFFICULTY</div>
+      </div>
+      <div class="wheel" id="mode-wheel">
+        <div class="wheel-label">MODE</div>
+      </div>
+    </div>
+
+    <button id="spin-btn">🎯 Roll the Balls!</button>
+
+    <div id="results">
+      <h2 id="course-result"></h2>
+      <h2 id="difficulty-result"></h2>
+      <h2 id="mode-result"></h2>
+      <p id="bonus-text"></p>
+    </div>
+	
+  </main>
+
+
+  <!-- Avatars -->
+  <footer class="avatar-bar">
+    <h3>Let's Play!</h3>
+    <div class="avatars">
+      <a href="https://beatleader.com/u/76561197963075686/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/76561197963075686R16.png" alt="VRZIP" title="VRZIP">
+      </a>
+      <a href="https://beatleader.com/u/308123/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/308123R39.png" alt="LYFEGIVER" title="LYFEGIVER">
+      </a>
+      <a href="https://beatleader.com/u/288863/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/288863R5.png" alt="Sa_Mcc" title="Sa_Mcc">
+      </a>
+	  <a href="https://beatleader.com/u/9039006826139884/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/9039006826139884R38.png" alt="ZoeDarlin" title="ZoeDarlin">
+      </a>
+      <a href="https://beatleader.com/u/311751/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/oculusavatar.png" alt="Dog" title="Dog">
+      </a>
+      <a href="https://beatleader.com/u/322739/scores/date/desc/1" target="_blank">
+        <img src="https://cdn.assets.beatleader.com/322739R6.png" alt="kelroyx" title="kelroyx">
+      </a>
+      <a href="#" title="Astra_AI">
+        <img src="images/avatars/astra.png" alt="Astra_AI" data-astra="true">
+      </a>
+    </div>
+  </footer>
+
+  <script src="zrswamg.js"></script>
+</body>
+</html>
